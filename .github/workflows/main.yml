@@ -31,7 +31,8 @@ jobs:
         run: |
           mkdir -p wallet
           echo "${{ secrets.ORACLE_WALLET_BASE64 }}" | base64 --decode > wallet/wallet.zip
-          unzip -o wallet/wallet.zip -d wallet/
+          unzip -j -o wallet/wallet.zip -d wallet/
+          sed -i 's|"?/network/admin"|"/app/wallet"|g' wallet/sqlnet.ora
           rm wallet/wallet.zip
 
       # Paso 3: Construir la imagen de Docker
@@ -76,7 +77,8 @@ jobs:
             # Preparar la Oracle Wallet
             mkdir -p ~/oracle_wallet
             echo "${{ secrets.ORACLE_WALLET_BASE64 }}" | base64 --decode > ~/oracle_wallet/wallet.zip
-            unzip -o ~/oracle_wallet/wallet.zip -d ~/oracle_wallet/
+            unzip -j -o ~/oracle_wallet/wallet.zip -d ~/oracle_wallet/
+            sed -i 's|"?/network/admin"|"/app/wallet"|g' ~/oracle_wallet/sqlnet.ora
             rm ~/oracle_wallet/wallet.zip
             
             # Parar y eliminar cualquier contenedor previo
