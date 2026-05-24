@@ -60,8 +60,21 @@ jobs:
             echo ${{ secrets.DOCKERHUB_TOKEN }} | docker login -u ${{ secrets.DOCKERHUB_USERNAME }} --password-stdin
             # Descargar la última versión de la imagen
             docker pull ${{ secrets.DOCKERHUB_USERNAME }}/my-app:latest
+            
+            # Preparar la Oracle Wallet
+            mkdir -p ~/oracle_wallet
+            echo "${{ secrets.ORACLE_WALLET_BASE64 }}" | base64 --decode > ~/oracle_wallet/wallet.zip
+            unzip -o ~/oracle_wallet/wallet.zip -d ~/oracle_wallet/
+            rm ~/oracle_wallet/wallet.zip
+            
             # Parar y eliminar cualquier contenedor previo
             docker stop my-app || true && docker rm my-app || true
+            
             # Iniciar el contenedor
-            docker run -d --name my-app -p 8080:8080 ${{ secrets.DOCKERHUB_USERNAME }}/my-app:latest
+            docker run -d --name my-app -p 8080:8080 \
+              -v ~/oracle_wallet:/app/wallet \
+              -e ORACLE_TNS_NAME=${{ secrets.ORACLE_TNS_NAME }} \
+              -e ORACLE_DB_USER=${{ secrets.ORACLE_DB_USER }} \
+              -e ORACLE_DB_PASSWORD=${{ secrets.ORACLE_DB_PASSWORD }} \
+              ${{ secrets.DOCKERHUB_USERNAME }}/my-app:latest
           EOF
