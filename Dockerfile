@@ -4,6 +4,19 @@ RUN apt-get update && apt-get install -y maven
 
 WORKDIR /app
 
+# Copiar la wallet al entorno de construcción
+COPY wallet /app/wallet
+
+# Recibir variables desde el pipeline
+ARG ORACLE_TNS_NAME
+ARG ORACLE_DB_USER
+ARG ORACLE_DB_PASSWORD
+
+# Convertir los ARG a variables de entorno para que Spring Boot y Maven las usen
+ENV ORACLE_TNS_NAME=${ORACLE_TNS_NAME}
+ENV ORACLE_DB_USER=${ORACLE_DB_USER}
+ENV ORACLE_DB_PASSWORD=${ORACLE_DB_PASSWORD}
+
 COPY pom.xml .
 COPY src /app/src
 RUN mvn clean package

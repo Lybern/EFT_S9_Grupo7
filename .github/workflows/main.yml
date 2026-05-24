@@ -26,10 +26,22 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
+      # Paso 2.5: Preparar la Oracle Wallet en el runner de GitHub
+      - name: Prepare Oracle Wallet
+        run: |
+          mkdir -p wallet
+          echo "${{ secrets.ORACLE_WALLET_BASE64 }}" | base64 --decode > wallet/wallet.zip
+          unzip -o wallet/wallet.zip -d wallet/
+          rm wallet/wallet.zip
+
       # Paso 3: Construir la imagen de Docker
       - name: Build Docker Image
         run: |
-          docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/my-app:latest .
+          docker build \
+            --build-arg ORACLE_TNS_NAME=${{ secrets.ORACLE_TNS_NAME }} \
+            --build-arg ORACLE_DB_USER=${{ secrets.ORACLE_DB_USER }} \
+            --build-arg ORACLE_DB_PASSWORD=${{ secrets.ORACLE_DB_PASSWORD }} \
+            -t ${{ secrets.DOCKERHUB_USERNAME }}/my-app:latest .
 
       # Paso 4: Hacer push de la imagen a DockerHub
       - name: Push Docker Image
