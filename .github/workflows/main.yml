@@ -39,9 +39,9 @@ jobs:
       - name: Build Docker Image
         run: |
           docker build \
-            --build-arg ORACLE_TNS_NAME=${{ secrets.ORACLE_TNS_NAME }} \
-            --build-arg ORACLE_DB_USER=${{ secrets.ORACLE_DB_USER }} \
-            --build-arg ORACLE_DB_PASSWORD=${{ secrets.ORACLE_DB_PASSWORD }} \
+            --build-arg ORACLE_TNS_NAME="${{ secrets.ORACLE_TNS_NAME }}" \
+            --build-arg ORACLE_DB_USER="${{ secrets.ORACLE_DB_USER }}" \
+            --build-arg ORACLE_DB_PASSWORD="${{ secrets.ORACLE_DB_PASSWORD }}" \
             -t ${{ secrets.DOCKERHUB_USERNAME }}/my-app:latest .
 
       # Paso 4: Hacer push de la imagen a DockerHub
@@ -87,8 +87,8 @@ jobs:
             # Iniciar el contenedor
             docker run -d --name my-app -p 8080:8080 \
               -v ~/oracle_wallet:/app/wallet \
-              -e ORACLE_TNS_NAME=${{ secrets.ORACLE_TNS_NAME }} \
-              -e ORACLE_DB_USER=${{ secrets.ORACLE_DB_USER }} \
-              -e ORACLE_DB_PASSWORD=${{ secrets.ORACLE_DB_PASSWORD }} \
+              -e ORACLE_TNS_NAME="${{ secrets.ORACLE_TNS_NAME }}" \
+              -e ORACLE_DB_USER="${{ secrets.ORACLE_DB_USER }}" \
+              -e ORACLE_DB_PASSWORD="${{ secrets.ORACLE_DB_PASSWORD }}" \
               ${{ secrets.DOCKERHUB_USERNAME }}/my-app:latest
           EOF
