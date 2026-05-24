@@ -1,15 +1,19 @@
 package cl.duoc.ejemplo.microservicio.controllers;
 
+import java.math.BigDecimal;
+import java.util.List;
+
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
 import cl.duoc.ejemplo.microservicio.dto.InscripcionRequest;
 import cl.duoc.ejemplo.microservicio.entities.Curso;
 import cl.duoc.ejemplo.microservicio.entities.Inscripcion;
 import cl.duoc.ejemplo.microservicio.repositories.CursoRepository;
 import cl.duoc.ejemplo.microservicio.repositories.InscripcionRepository;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-
-import java.math.BigDecimal;
-import java.util.List;
 
 @RestController
 @RequestMapping("/inscripciones")
@@ -25,6 +29,10 @@ public class InscripcionController {
 
     @PostMapping
     public ResponseEntity<Inscripcion> inscribirEstudiante(@RequestBody InscripcionRequest request) {
+        if (request.getCursoIds() == null || request.getCursoIds().isEmpty()) {
+            return ResponseEntity.badRequest().build();
+        }
+
         List<Curso> cursosSeleccionados = cursoRepository.findAllById(request.getCursoIds());
 
         BigDecimal totalAPagar = cursosSeleccionados.stream()
