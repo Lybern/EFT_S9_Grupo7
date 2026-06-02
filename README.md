@@ -1,66 +1,104 @@
 # EjemploMicroservicio1
 
-Este es un microservicio de ejemplo que expone cuatro endpoints (`GET`, `POST`, `PUT` y `DELETE`). Fue creado para probar integraciones y no utiliza una base de datos: todas las respuestas están en duro (hardcoded).
+Este es el microservicio de gestión de inscripciones (Cloud Native). Conecta a una base de datos Oracle y se integra con AWS S3 para generar y almacenar resúmenes de inscripción.
 
 ---
 
-## Endpoints disponibles
+## Endpoints Disponibles (Inscripciones y Resúmenes S3)
 
-### GET `/microservicio/1`
+### POST `/inscripciones`
+Crea una nueva inscripción para un estudiante calculando el costo total según los cursos seleccionados.
 
-Obtiene información básica de prueba.
+**Cuerpo de ejemplo (JSON):**
+```json
+{
+  "nombreEstudiante": "Juan Perez",
+  "cursoIds": [1, 2]
+}
+```
 
 **Ejemplo con `curl`:**
-
 ```bash
-curl --location 'http://localhost:8080/microservicio/1'
+curl -X POST 'http://localhost:8080/inscripciones' \
+  -H 'Content-Type: application/json' \
+  -d '{"nombreEstudiante": "Juan Perez", "cursoIds": [1, 2]}'
 ```
 
 ---
 
-### POST `/microservicio`
-
-Envía un mensaje para simular una integración.
+### GET `/inscripciones`
+Lista todas las inscripciones registradas en la base de datos.
 
 **Ejemplo con `curl`:**
-
 ```bash
-curl --location 'http://localhost:8080/microservicio' \
-  --header 'Content-Type: application/json' \
-  --data '{
-    "mensaje": "integración ok"
-}'
+curl -X GET 'http://localhost:8080/inscripciones'
 ```
 
 ---
 
-### PUT `/microservicio?status=OK`
-
-Actualiza un estado simulado en el microservicio.
+### GET `/inscripciones/{id}`
+Obtiene el detalle de una inscripción específica según su ID.
 
 **Ejemplo con `curl`:**
-
 ```bash
-curl --location --request PUT 'http://localhost:8080/microservicio?status=OK'
+curl -X GET 'http://localhost:8080/inscripciones/1'
 ```
 
 ---
 
-### DELETE `/microservicio`
-
-Simula la eliminación de un recurso. Requiere header de autorización.
+### GET `/inscripciones/{id}/resumen/generar`
+Genera dinámicamente un archivo físico de texto (resumen) con los detalles de la inscripción, listo para descargar.
 
 **Ejemplo con `curl`:**
-
 ```bash
-curl --location --request DELETE 'http://localhost:8080/microservicio' \
-  --header 'Authorization: hola mundo'
+curl -O -J -X GET 'http://localhost:8080/inscripciones/1/resumen/generar'
+```
+
+---
+
+### POST `/inscripciones/{id}/resumen?bucket={bucketName}`
+Sube un archivo de resumen generado a una carpeta lógica (identificada por el ID de la inscripción) dentro de un bucket de AWS S3.
+
+**Ejemplo con `curl`:**
+```bash
+curl -X POST "http://localhost:8080/inscripciones/1/resumen?bucket=mi-bucket-s3" \
+  -F "file=@resumen_inscripcion_1.txt"
+```
+
+---
+
+### PUT `/inscripciones/{id}/resumen?bucket={bucketName}`
+Modifica (sobrescribe) un archivo de resumen existente en el bucket S3 para la inscripción dada.
+
+**Ejemplo con `curl`:**
+```bash
+curl -X PUT "http://localhost:8080/inscripciones/1/resumen?bucket=mi-bucket-s3" \
+  -F "file=@resumen_nuevo.txt"
+```
+
+---
+
+### GET `/inscripciones/{id}/resumen?bucket={bucketName}&filename={fileName}`
+Descarga el archivo de resumen previamente guardado en el bucket de S3.
+
+**Ejemplo con `curl`:**
+```bash
+curl -O -J -X GET "http://localhost:8080/inscripciones/1/resumen?bucket=mi-bucket-s3&filename=resumen_inscripcion_1.txt"
+```
+
+---
+
+### DELETE `/inscripciones/{id}/resumen?bucket={bucketName}&filename={fileName}`
+Borra definitivamente el archivo de resumen alojado en AWS S3.
+
+**Ejemplo con `curl`:**
+```bash
+curl -X DELETE "http://localhost:8080/inscripciones/1/resumen?bucket=mi-bucket-s3&filename=resumen_inscripcion_1.txt"
 ```
 
 ---
 
 ## Notas
-
-- Todos los endpoints responden con datos estáticos (hardcoded).
-- Este microservicio no realiza operaciones reales sobre bases de datos o sistemas externos.
-- Ideal para probar pipelines de integración y despliegue.
+- Este microservicio interactúa con una base de datos **Oracle** (requiere inyectar variables de entorno como `ORACLE_TNS_NAME`, `ORACLE_DB_USER`, `ORACLE_DB_PASSWORD` y un Oracle Wallet válido bajo `/app/wallet` o entorno local).
+- Utiliza **Spring Cloud AWS** para conectarse de manera fluida al servicio AWS S3.
+- En los endpoints vinculados a S3, el uso del parámetro `bucket` en la URL otorga flexibilidad para elegir el bucket objetivo dinámicamente.
