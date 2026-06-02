@@ -11,7 +11,11 @@ import org.springframework.boot.autoconfigure.orm.jpa.HibernateJpaAutoConfigurat
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
-@SpringBootTest
+@SpringBootTest(properties = {
+		"spring.cloud.aws.region.static=us-east-1",
+		"spring.cloud.aws.credentials.access-key=dummy",
+		"spring.cloud.aws.credentials.secret-key=dummy"
+})
 @EnableAutoConfiguration(exclude = {
 		DataSourceAutoConfiguration.class,
 		DataSourceTransactionManagerAutoConfiguration.class,
