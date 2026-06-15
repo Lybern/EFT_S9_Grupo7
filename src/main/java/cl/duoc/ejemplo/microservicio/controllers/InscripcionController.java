@@ -137,7 +137,14 @@ public class InscripcionController {
                     .contentType(MediaType.APPLICATION_OCTET_STREAM)
                     .body(fileBytes);
         } catch (NoSuchKeyException e) {
-            return ResponseEntity.notFound().build();
+            try {
+                java.io.InputStream in = new java.net.URI("https://http.cat/404").toURL().openStream();
+                return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                        .contentType(MediaType.IMAGE_JPEG)
+                        .body(in.readAllBytes());
+            } catch (Exception ex) {
+                return ResponseEntity.notFound().build();
+            }
         } catch (Exception e) {
             return ResponseEntity.internalServerError().build();
         }
@@ -145,7 +152,7 @@ public class InscripcionController {
 
     // 5. Borrar archivo del resumen en S3
     @DeleteMapping("/{id}/resumen")
-    public ResponseEntity<Void> borrarResumenS3(
+    public ResponseEntity<?> borrarResumenS3(
             @PathVariable Long id, 
             @RequestParam("bucket") String bucket, 
             @RequestParam("filename") String filename) {
@@ -154,7 +161,14 @@ public class InscripcionController {
             awsS3Service.deleteObject(bucket, key);
             return ResponseEntity.noContent().build();
         } catch (NoSuchKeyException e) {
-            return ResponseEntity.notFound().build();
+            try {
+                java.io.InputStream in = new java.net.URI("https://http.cat/404").toURL().openStream();
+                return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                        .contentType(MediaType.IMAGE_JPEG)
+                        .body(in.readAllBytes());
+            } catch (Exception ex) {
+                return ResponseEntity.notFound().build();
+            }
         } catch (Exception e) {
             return ResponseEntity.internalServerError().build();
         }
