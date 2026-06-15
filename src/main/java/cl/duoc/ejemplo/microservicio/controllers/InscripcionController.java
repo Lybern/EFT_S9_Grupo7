@@ -20,6 +20,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+import software.amazon.awssdk.services.s3.model.NoSuchKeyException;
+
 import cl.duoc.ejemplo.microservicio.dto.InscripcionRequest;
 import cl.duoc.ejemplo.microservicio.entities.Curso;
 import cl.duoc.ejemplo.microservicio.entities.Inscripcion;
@@ -134,6 +136,8 @@ public class InscripcionController {
                     .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + filename)
                     .contentType(MediaType.APPLICATION_OCTET_STREAM)
                     .body(fileBytes);
+        } catch (NoSuchKeyException e) {
+            return ResponseEntity.notFound().build();
         } catch (Exception e) {
             return ResponseEntity.internalServerError().build();
         }
@@ -149,6 +153,8 @@ public class InscripcionController {
             String key = id + "/" + filename;
             awsS3Service.deleteObject(bucket, key);
             return ResponseEntity.noContent().build();
+        } catch (NoSuchKeyException e) {
+            return ResponseEntity.notFound().build();
         } catch (Exception e) {
             return ResponseEntity.internalServerError().build();
         }
