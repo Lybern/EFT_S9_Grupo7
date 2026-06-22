@@ -32,6 +32,9 @@ class MicroservicioApplicationTests {
 	@MockitoBean
 	private AwsS3Service awsS3Service;
 
+	@MockitoBean
+	private org.springframework.security.oauth2.jwt.JwtDecoder jwtDecoder;
+
 	// Test push
 	@Test
 	void contextLoads() {

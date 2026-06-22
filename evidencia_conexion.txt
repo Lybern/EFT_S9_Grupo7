@@ -1,0 +1,23 @@
+================================================================================
+EVIDENCIA DE CONEXIÓN EXITOSA A BASE DE DATOS ORACLE CLOUD
+================================================================================
+
+La aplicación inicia el pool de conexiones (HikariPool-1) y agrega la conexión JDBC hacia Oracle de manera exitosa:
+
+[Log de Conexión]
+2026-06-22T06:58:41.140-04:00  INFO 4488 --- [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Starting...
+2026-06-22T06:58:42.117-04:00  INFO 4488 --- [           main] com.zaxxer.hikari.pool.HikariPool        : HikariPool-1 - Added connection oracle.jdbc.driver.T4CConnection@6247c08c
+2026-06-22T06:58:42.120-04:00  INFO 4488 --- [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Start completed.
+
+[Log de Inicialización de Hibernate/JPA]
+2026-06-22T06:58:42.530-04:00  INFO 4488 --- [           main] org.hibernate.orm.connections.pooling    : HHH10001005: Database info:
+	Database JDBC URL [Connecting through datasource 'HikariDataSource (HikariPool-1)']
+	Database driver: undefined/unknown
+	Database version: 19.32
+2026-06-22T06:58:52.420-04:00  INFO 4488 --- [           main] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+
+[Log de Inicio de Servidor Tomcat]
+2026-06-22T06:58:53.455-04:00  INFO 4488 --- [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat started on port 8080 (http) with context path '/'
+2026-06-22T06:58:53.466-04:00  INFO 4488 --- [           main] c.d.e.m.MicroservicioApplication         : Started MicroservicioApplication in 16.639 seconds (process running for 17.119)
+
+================================================================================
