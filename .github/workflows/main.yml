@@ -42,6 +42,7 @@ jobs:
             --build-arg ORACLE_TNS_NAME="${{ secrets.ORACLE_TNS_NAME }}" \
             --build-arg ORACLE_DB_USER="${{ secrets.ORACLE_DB_USER }}" \
             --build-arg ORACLE_DB_PASSWORD="${{ secrets.ORACLE_DB_PASSWORD }}" \
+            --build-arg AZURE_CLIENT_SECRET="${{ secrets.AZURE_CLIENT_SECRET }}" \
             -t ${{ secrets.DOCKERHUB_USERNAME }}/my-app:latest .
 
       # Paso 4: Hacer push de la imagen a DockerHub
@@ -90,6 +91,7 @@ jobs:
               -e ORACLE_TNS_NAME="${{ secrets.ORACLE_TNS_NAME }}" \
               -e ORACLE_DB_USER="${{ secrets.ORACLE_DB_USER }}" \
               -e ORACLE_DB_PASSWORD="${{ secrets.ORACLE_DB_PASSWORD }}" \
+              -e AZURE_CLIENT_SECRET="${{ secrets.AZURE_CLIENT_SECRET }}" \
               -e AWS_ACCESS_KEY_ID="${{ secrets.AWS_ACCESS_KEY_ID }}" \
               -e AWS_SECRET_ACCESS_KEY="${{ secrets.AWS_SECRET_ACCESS_KEY }}" \
               -e AWS_SESSION_TOKEN="${{ secrets.AWS_SESSION_TOKEN }}" \
