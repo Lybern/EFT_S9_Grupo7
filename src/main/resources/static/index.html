@@ -1,0 +1,586 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Cloud Native Dashboard</title>
+    <meta name="description" content="Dashboard for Cloud Native App to interact with AWS APIs securely">
+    <!-- Modern Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --bg-gradient: linear-gradient(135deg, #020617 0%, #0f172a 100%);
+            --glass-bg: rgba(15, 23, 42, 0.45);
+            --glass-border: rgba(255, 255, 255, 0.08);
+            --accent-primary: #6366f1;
+            --accent-hover: #4f46e5;
+            --success: #10b981;
+            --danger: #ef4444;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --card-shadow: 0 30px 60px -12px rgba(0, 0, 0, 0.8), 0 0 40px rgba(99, 102, 241, 0.15);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg-gradient);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+            position: relative;
+            /* Cyber Grid Background */
+            background-image: 
+                linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+            background-size: 40px 40px;
+        }
+
+        /* Ambient animated background shapes */
+        .shape {
+            position: absolute;
+            filter: blur(100px);
+            z-index: 0;
+            border-radius: 50%;
+            opacity: 0.5;
+            transition: all 0.5s ease;
+        }
+        .shape-1 {
+            width: 500px;
+            height: 500px;
+            background: #4f46e5; /* Indigo */
+            top: -100px;
+            left: -100px;
+            animation: float 14s ease-in-out infinite alternate;
+        }
+        .shape-2 {
+            width: 450px;
+            height: 450px;
+            background: #0ea5e9; /* Sky blue */
+            bottom: -150px;
+            right: -50px;
+            animation: float 18s ease-in-out infinite alternate-reverse;
+        }
+        .shape-3 {
+            width: 350px;
+            height: 350px;
+            background: #a855f7; /* Purple */
+            top: 25%;
+            left: 45%;
+            animation: float 22s ease-in-out infinite alternate;
+        }
+
+        @keyframes float {
+            0% { transform: translate(0, 0) scale(1) rotate(0deg); }
+            50% { transform: translate(40px, 50px) scale(1.1) rotate(180deg); }
+            100% { transform: translate(-30px, -60px) scale(0.9) rotate(360deg); }
+        }
+
+        /* Glassmorphism Card Container */
+        .glass-wrapper {
+            perspective: 1000px; /* For 3D effect */
+            z-index: 1;
+        }
+
+        .glass-panel {
+            background: var(--glass-bg);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            border: 1px solid var(--glass-border);
+            border-top: 1px solid rgba(255, 255, 255, 0.15);
+            border-left: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 28px;
+            padding: 48px;
+            width: 90vw;
+            max-width: 540px;
+            box-shadow: var(--card-shadow);
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
+            animation: slideUpFade 1s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+            opacity: 0;
+            transform: translateY(30px);
+            position: relative;
+            overflow: hidden;
+            
+            /* 3D Tilt properties */
+            transform-style: preserve-3d;
+            transition: transform 0.1s;
+        }
+
+        /* Glowing pseudo-element for borders */
+        .glass-panel::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            border-radius: 28px;
+            padding: 2px;
+            background: linear-gradient(135deg, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0) 50%, rgba(99,102,241,0.4) 100%);
+            -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            -webkit-mask-composite: xor;
+            mask-composite: exclude;
+            pointer-events: none;
+        }
+
+        /* Logo / Icon */
+        .logo-container {
+            display: flex;
+            justify-content: center;
+            margin-bottom: -15px;
+            transform: translateZ(30px); /* Popping out in 3D */
+        }
+
+        .logo-glow {
+            background: linear-gradient(135deg, #6366f1, #a855f7);
+            border-radius: 18px;
+            width: 64px;
+            height: 64px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 0 30px rgba(99, 102, 241, 0.5);
+            position: relative;
+            animation: pulseGlow 3s infinite alternate;
+        }
+
+        .logo-glow svg {
+            width: 32px;
+            height: 32px;
+            fill: none;
+            stroke: white;
+            stroke-width: 2;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+
+        @keyframes pulseGlow {
+            0% { box-shadow: 0 0 20px rgba(99, 102, 241, 0.4); transform: scale(1); }
+            100% { box-shadow: 0 0 40px rgba(168, 85, 247, 0.6); transform: scale(1.05); }
+        }
+
+        /* Typography */
+        .header {
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            transform: translateZ(20px);
+        }
+
+        h1 {
+            font-size: 2.2rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #ffffff 30%, #a5b4fc 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: -0.5px;
+        }
+
+        p.subtitle {
+            color: var(--text-muted);
+            font-size: 0.95rem;
+            font-weight: 400;
+        }
+
+        /* Status & User Badge */
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            background: rgba(0, 0, 0, 0.4);
+            padding: 10px 20px;
+            border-radius: 24px;
+            font-size: 0.85rem;
+            color: #cbd5e1;
+            margin: 0 auto;
+            border: 1px solid rgba(255,255,255,0.08);
+            transform: translateZ(15px);
+            backdrop-filter: blur(10px);
+        }
+        
+        .status-dot {
+            width: 10px;
+            height: 10px;
+            background-color: var(--success);
+            border-radius: 50%;
+            box-shadow: 0 0 12px var(--success);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.5); }
+            70% { box-shadow: 0 0 0 8px rgba(16, 185, 129, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+        }
+
+        /* Token Info Box */
+        .token-box {
+            background: rgba(15, 23, 42, 0.6);
+            border: 1px solid rgba(99, 102, 241, 0.2);
+            border-radius: 16px;
+            padding: 14px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-family: 'Fira Code', monospace;
+            font-size: 0.8rem;
+            color: #a5b4fc;
+            display: none;
+            animation: fadeIn 0.5s ease forwards;
+            transform: translateZ(10px);
+        }
+
+        .token-box button {
+            background: rgba(99, 102, 241, 0.2);
+            border: 1px solid rgba(99, 102, 241, 0.4);
+            color: #fff;
+            padding: 6px 14px;
+            border-radius: 8px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .token-box button:hover {
+            background: var(--accent-primary);
+            box-shadow: 0 0 15px rgba(99, 102, 241, 0.5);
+        }
+
+        /* Buttons */
+        .btn-group {
+            display: flex;
+            gap: 16px;
+            transform: translateZ(25px);
+        }
+
+        .btn {
+            background: linear-gradient(135deg, var(--accent-primary), #818cf8);
+            color: white;
+            border: none;
+            padding: 16px 24px;
+            border-radius: 16px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            flex: 1;
+            box-shadow: 0 10px 20px -10px rgba(99, 102, 241, 0.6);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn::after {
+            content: '';
+            position: absolute;
+            top: -50%; left: -50%;
+            width: 200%; height: 200%;
+            background: rgba(255,255,255,0.1);
+            transform: rotate(45deg) translateY(100%);
+            transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            flex: 0 0 auto;
+            color: #cbd5e1;
+            box-shadow: none;
+        }
+
+        .btn:hover {
+            transform: translateY(-4px) scale(1.02);
+            box-shadow: 0 20px 30px -10px rgba(99, 102, 241, 0.8);
+        }
+
+        .btn:hover::after {
+            transform: rotate(45deg) translateY(-100%);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: rgba(255, 255, 255, 0.2);
+            color: #fff;
+            box-shadow: 0 10px 20px -10px rgba(0, 0, 0, 0.5);
+        }
+
+        /* Code/Output Box */
+        .output-box {
+            background: #020617;
+            border-radius: 16px;
+            padding: 24px;
+            font-family: 'Fira Code', monospace;
+            font-size: 0.85rem;
+            line-height: 1.6;
+            color: #e2e8f0;
+            overflow-x: auto;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            min-height: 150px;
+            max-height: 280px;
+            display: none;
+            opacity: 0;
+            box-shadow: inset 0 4px 10px rgba(0,0,0,0.6);
+            transform: translateZ(5px);
+            scrollbar-width: thin;
+            scrollbar-color: var(--accent-primary) #020617;
+        }
+
+        .output-box::-webkit-scrollbar { height: 8px; width: 8px; }
+        .output-box::-webkit-scrollbar-track { background: #020617; border-radius: 8px; }
+        .output-box::-webkit-scrollbar-thumb { background: var(--accent-primary); border-radius: 8px; }
+
+        /* JSON Syntax Highlighting */
+        .string { color: #34d399; } /* emerald-400 */
+        .number { color: #fbbf24; } /* amber-400 */
+        .boolean { color: #f472b6; } /* pink-400 */
+        .null { color: #94a3b8; } /* slate-400 */
+        .key { color: #38bdf8; font-weight: 500; } /* sky-400 */
+
+        .output-box.visible {
+            display: block;
+            animation: slideUpFade 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+
+        @keyframes slideUpFade {
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        /* Loading Animation */
+        .loader {
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255,255,255,0.2);
+            border-radius: 50%;
+            border-top-color: #ffffff;
+            animation: spin 0.8s linear infinite;
+            display: none;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+    </style>
+</head>
+<body>
+
+    <!-- Ambient Backgrounds -->
+    <div class="shape shape-1"></div>
+    <div class="shape shape-2"></div>
+    <div class="shape shape-3"></div>
+
+    <!-- Main Card -->
+    <div class="glass-wrapper" id="cardWrapper">
+        <div class="glass-panel" id="glassCard">
+            
+            <div class="logo-container">
+                <div class="logo-glow">
+                    <!-- Cloud API SVG Icon -->
+                    <svg viewBox="0 0 24 24">
+                        <path d="M17.5 19C19.9853 19 22 16.9853 22 14.5C22 12.136 20.1776 10.2007 17.8546 10.0134C17.4332 6.61111 14.5363 4 11 4C7.13401 4 4 7.13401 4 11C4 11.238 4.01185 11.4732 4.0349 11.7046C2.29053 12.1882 1 13.7845 1 15.6667C1 17.8758 2.79086 19.6667 5 19.6667H17.5Z"/>
+                        <path d="M8 14L12 10L16 14M12 10V19"/>
+                    </svg>
+                </div>
+            </div>
+
+            <div class="header">
+                <h1>API Dashboard</h1>
+                <p class="subtitle">Infraestructura Segura End-to-End</p>
+            </div>
+
+            <div class="status-badge" id="statusBadge">
+                <div class="status-dot"></div>
+                <span id="userName">Sincronizando identidad...</span>
+            </div>
+
+            <div class="token-box" id="tokenBox">
+                <span id="tokenPreview">JWT: Cargando...</span>
+                <button onclick="copiarToken()" id="copyBtn">
+                    <svg style="width:14px; height:14px; margin-right:4px; vertical-align:text-bottom; fill:none; stroke:currentColor; stroke-width:2;" viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                    Copiar
+                </button>
+            </div>
+
+            <div class="btn-group">
+                <button class="btn" onclick="obtenerDatos()" id="mainBtn">
+                    <div class="loader" id="dataLoader"></div>
+                    <span>⚡ Consultar EC2 vía Gateway</span>
+                </button>
+                <button class="btn btn-secondary" onclick="window.location.href='/logout'" title="Cerrar Sesión">
+                    <svg style="width:20px; height:20px; fill:none; stroke:currentColor; stroke-width:2; stroke-linecap:round; stroke-linejoin:round;" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+                </button>
+            </div>
+
+            <div id="output" class="output-box"></div>
+        </div>
+    </div>
+
+    <script>
+        // --- 3D Hover Tilt Effect Logic ---
+        const wrapper = document.getElementById('cardWrapper');
+        const card = document.getElementById('glassCard');
+
+        wrapper.addEventListener('mousemove', (e) => {
+            const rect = wrapper.getBoundingClientRect();
+            const x = e.clientX - rect.left; // x position within the element.
+            const y = e.clientY - rect.top;  // y position within the element.
+            
+            const centerX = rect.width / 2;
+            const centerY = rect.height / 2;
+            
+            // Calculate rotation (max 6 degrees)
+            const rotateX = ((y - centerY) / centerY) * -6;
+            const rotateY = ((x - centerX) / centerX) * 6;
+            
+            card.style.transform = `rotateX(${rotateX}deg) rotateY(${rotateY}deg) translateY(0)`;
+        });
+
+        wrapper.addEventListener('mouseleave', () => {
+            // Smoothly snap back to 0
+            card.style.transition = 'transform 0.5s cubic-bezier(0.25, 0.8, 0.25, 1)';
+            card.style.transform = 'rotateX(0deg) rotateY(0deg) translateY(0)';
+            
+            setTimeout(() => {
+                card.style.transition = 'transform 0.1s';
+            }, 500);
+        });
+        // ------------------------------------
+
+        const outputBox = document.getElementById('output');
+        const tokenBox = document.getElementById('tokenBox');
+        const tokenPreview = document.getElementById('tokenPreview');
+        let currentToken = "";
+
+        // Al cargar la página, precargamos la info del usuario silenciósamente
+        window.onload = async () => {
+            try {
+                const response = await fetch('/api/token');
+                if (response.ok) {
+                    const data = await response.json();
+                    currentToken = data.token;
+                    
+                    // Actualizar UI
+                    document.getElementById('userName').innerHTML = `Autenticado vía <b>Azure B2C</b>`;
+                    tokenPreview.textContent = `JWT: ${currentToken.substring(0, 15)}...${currentToken.substring(currentToken.length - 10)}`;
+                    tokenBox.style.display = 'flex';
+                } else {
+                    document.getElementById('userName').textContent = "Sesión requerida";
+                    document.querySelector('.status-dot').style.backgroundColor = 'var(--danger)';
+                    document.querySelector('.status-dot').style.boxShadow = '0 0 12px var(--danger)';
+                }
+            } catch (e) {
+                console.error(e);
+            }
+        };
+
+        function copiarToken() {
+            if(currentToken) {
+                navigator.clipboard.writeText(currentToken);
+                const btn = document.getElementById('copyBtn');
+                btn.innerHTML = `<svg style="width:14px; height:14px; margin-right:4px; vertical-align:text-bottom; fill:none; stroke:currentColor; stroke-width:2;" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg> ¡Copiado!`;
+                btn.style.background = "var(--success)";
+                btn.style.borderColor = "var(--success)";
+                setTimeout(() => {
+                    btn.innerHTML = `<svg style="width:14px; height:14px; margin-right:4px; vertical-align:text-bottom; fill:none; stroke:currentColor; stroke-width:2;" viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg> Copiar`;
+                    btn.style.background = "rgba(99, 102, 241, 0.2)";
+                    btn.style.borderColor = "rgba(99, 102, 241, 0.4)";
+                }, 2500);
+            }
+        }
+
+        // Función para resaltar sintaxis JSON
+        function syntaxHighlight(json) {
+            json = json.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+            return json.replace(/("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g, function (match) {
+                var cls = 'number';
+                if (/^"/.test(match)) {
+                    if (/:$/.test(match)) {
+                        cls = 'key';
+                        match = match.replace(/"/g, ''); 
+                    } else {
+                        cls = 'string';
+                    }
+                } else if (/true|false/.test(match)) {
+                    cls = 'boolean';
+                } else if (/null/.test(match)) {
+                    cls = 'null';
+                }
+                return '<span class="' + cls + '">' + match + '</span>';
+            });
+        }
+
+        async function obtenerDatos() {
+            const dataBtnText = document.querySelector('#mainBtn span');
+            const dataLoader = document.getElementById('dataLoader');
+
+            try {
+                // Estado de carga
+                dataBtnText.style.display = 'none';
+                dataLoader.style.display = 'block';
+                
+                outputBox.classList.remove('visible');
+                void outputBox.offsetWidth; // Forzar reflow
+                outputBox.classList.add('visible');
+                outputBox.innerHTML = "<span style='color: #94a3b8'>Interrogando a la API Gateway...</span>";
+
+                if (!currentToken) {
+                    throw new Error("Token no encontrado. Debes iniciar sesión con Microsoft Entra ID.");
+                }
+
+                // Realizar petición a la API Gateway
+                const url = 'https://eof4imuyc9.execute-api.us-east-1.amazonaws.com/Desarrollo/datos/1';
+                const awsResponse = await fetch(url, {
+                    method: 'GET',
+                    headers: { 
+                        'Authorization': `Bearer ${currentToken}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (!awsResponse.ok) {
+                    throw new Error(`Código ${awsResponse.status}: Tráfico bloqueado por API Gateway`);
+                }
+
+                // Leer la respuesta como texto primero
+                const rawText = await awsResponse.text();
+                let formattedOutput = "";
+                
+                try {
+                    // Intentar parsear como JSON
+                    const data = JSON.parse(rawText);
+                    formattedOutput = syntaxHighlight(JSON.stringify(data, null, 2));
+                } catch (e) {
+                    // Si falla, significa que la API devolvió texto plano (ej. "Hola mundo")
+                    formattedOutput = `<span class="string">"${rawText}"</span>`;
+                }
+
+                outputBox.innerHTML = `<span style='color: var(--success); font-weight: bold;'>⚡ 200 OK - Autorización Confirmada</span>\n\n${formattedOutput}`;
+
+            } catch (error) {
+                console.error("Error:", error);
+                outputBox.innerHTML = `<span style='color: var(--danger); font-weight: bold;'>🚫 Error Crítico</span>\n\n<span style='color: #cbd5e1'>${error.message}</span>`;
+            } finally {
+                dataBtnText.style.display = 'block';
+                dataLoader.style.display = 'none';
+            }
+        }
+    </script>
+</body>
+</html>
