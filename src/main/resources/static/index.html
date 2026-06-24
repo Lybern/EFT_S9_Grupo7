@@ -410,14 +410,6 @@
                 <span id="userName">Sincronizando identidad...</span>
             </div>
 
-            <div class="token-box" id="tokenBox">
-                <span id="tokenPreview">JWT: Cargando...</span>
-                <button onclick="copiarToken()" id="copyBtn">
-                    <svg style="width:14px; height:14px; margin-right:4px; vertical-align:text-bottom; fill:none; stroke:currentColor; stroke-width:2;" viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
-                    Copiar
-                </button>
-            </div>
-
             <div class="btn-group">
                 <button class="btn" onclick="obtenerDatos()" id="mainBtn">
                     <div class="loader" id="dataLoader"></div>
@@ -464,8 +456,6 @@
         // ------------------------------------
 
         const outputBox = document.getElementById('output');
-        const tokenBox = document.getElementById('tokenBox');
-        const tokenPreview = document.getElementById('tokenPreview');
         let currentToken = "";
 
         // Al cargar la página, precargamos la info del usuario silenciósamente
@@ -474,12 +464,10 @@
                 const response = await fetch('/api/token');
                 if (response.ok) {
                     const data = await response.json();
-                    currentToken = data.token;
+                    currentToken = data.token; // Guardamos el token en memoria sin mostrarlo
                     
                     // Actualizar UI
-                    document.getElementById('userName').innerHTML = `Autenticado vía <b>Azure B2C</b>`;
-                    tokenPreview.textContent = `JWT: ${currentToken.substring(0, 15)}...${currentToken.substring(currentToken.length - 10)}`;
-                    tokenBox.style.display = 'flex';
+                    document.getElementById('userName').innerHTML = `Identidad Confirmada: <b>Modo Producción Seguro</b>`;
                 } else {
                     document.getElementById('userName').textContent = "Sesión requerida";
                     document.querySelector('.status-dot').style.backgroundColor = 'var(--danger)';
@@ -490,20 +478,7 @@
             }
         };
 
-        function copiarToken() {
-            if(currentToken) {
-                navigator.clipboard.writeText(currentToken);
-                const btn = document.getElementById('copyBtn');
-                btn.innerHTML = `<svg style="width:14px; height:14px; margin-right:4px; vertical-align:text-bottom; fill:none; stroke:currentColor; stroke-width:2;" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg> ¡Copiado!`;
-                btn.style.background = "var(--success)";
-                btn.style.borderColor = "var(--success)";
-                setTimeout(() => {
-                    btn.innerHTML = `<svg style="width:14px; height:14px; margin-right:4px; vertical-align:text-bottom; fill:none; stroke:currentColor; stroke-width:2;" viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg> Copiar`;
-                    btn.style.background = "rgba(99, 102, 241, 0.2)";
-                    btn.style.borderColor = "rgba(99, 102, 241, 0.4)";
-                }, 2500);
-            }
-        }
+
 
         // Función para resaltar sintaxis JSON
         function syntaxHighlight(json) {
