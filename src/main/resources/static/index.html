@@ -2,8 +2,8 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Cloud Native Dashboard</title>
-    <meta name="description" content="Dashboard for Cloud Native App to interact with AWS APIs securely">
+    <title>API Dashboard</title>
+    <meta name="description" content="Dashboard to interact with AWS APIs securely">
     <!-- Modern Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
     
@@ -467,7 +467,7 @@
                     currentToken = data.token; // Guardamos el token en memoria sin mostrarlo
                     
                     // Actualizar UI
-                    document.getElementById('userName').innerHTML = `Identidad Confirmada: <b>Modo Producción Seguro</b>`;
+                    document.getElementById('userName').innerHTML = `Autenticado vía <b>Azure B2C</b>`;
                 } else {
                     document.getElementById('userName').textContent = "Sesión requerida";
                     document.querySelector('.status-dot').style.backgroundColor = 'var(--danger)';
