@@ -46,6 +46,9 @@ class InscripcionControllerTest {
     @MockitoBean
     private AwsS3Service awsS3Service;
 
+    @MockitoBean
+    private cl.duoc.ejemplo.microservicio.service.ProducirMensajeService producirMensajeService;
+
     @Test
     void testGenerarResumenFisico_Success() throws Exception {
         // Arrange

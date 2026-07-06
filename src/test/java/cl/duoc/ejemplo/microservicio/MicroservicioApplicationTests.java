@@ -35,6 +35,9 @@ class MicroservicioApplicationTests {
 	@MockitoBean
 	private org.springframework.security.oauth2.jwt.JwtDecoder jwtDecoder;
 
+	@MockitoBean
+	private cl.duoc.ejemplo.microservicio.repositories.ResumenCompraRepository resumenCompraRepository;
+
 	// Test push
 	@Test
 	void contextLoads() {
