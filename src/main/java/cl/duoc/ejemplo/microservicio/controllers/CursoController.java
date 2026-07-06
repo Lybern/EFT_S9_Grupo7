@@ -1,4 +1,4 @@
-package cl.duoc.ejemplo.microservicio.controllers;
+package cl.duoc.ejemplo.microservicio.controllerss;
 
 import cl.duoc.ejemplo.microservicio.entities.Curso;
 import cl.duoc.ejemplo.microservicio.repositories.CursoRepository;

@@ -1,4 +1,4 @@
-package cl.duoc.ejemplo.microservicio.controllers;
+package cl.duoc.ejemplo.microservicio.controllerss;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;

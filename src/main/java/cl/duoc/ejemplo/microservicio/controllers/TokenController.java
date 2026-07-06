@@ -1,4 +1,4 @@
-package cl.duoc.ejemplo.microservicio.controllers;
+package cl.duoc.ejemplo.microservicio.controllerss;
 
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClient;

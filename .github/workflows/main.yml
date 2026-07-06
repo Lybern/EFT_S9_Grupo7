@@ -57,7 +57,7 @@ jobs:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-1  # Cambia a tu región
-          aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
+          # aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
     # Paso 5.5: 
       - name: Add SSH Key
         run: |
@@ -82,8 +82,11 @@ jobs:
             sed -i 's|"?/network/admin"|"/app/wallet"|g' ~/oracle_wallet/sqlnet.ora
             rm ~/oracle_wallet/wallet.zip
             
-            # Parar y eliminar cualquier contenedor previo
+            # Parar y eliminar cualquier contenedor previo o proceso en el puerto 8080
             docker stop my-app || true && docker rm my-app || true
+            docker stop $(docker ps -a -q) || true
+            docker rm $(docker ps -a -q) || true
+            sudo fuser -k 8080/tcp || true
             
             # Iniciar el contenedor
             docker run -d --name my-app -p 8080:8080 \
