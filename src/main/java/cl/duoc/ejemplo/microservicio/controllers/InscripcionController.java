@@ -36,11 +36,13 @@ public class InscripcionController {
     private final InscripcionRepository inscripcionRepository;
     private final CursoRepository cursoRepository;
     private final AwsS3Service awsS3Service;
+    private final cl.duoc.ejemplo.microservicio.service.ProducirMensajeService producirMensajeService;
 
-    public InscripcionController(InscripcionRepository inscripcionRepository, CursoRepository cursoRepository, AwsS3Service awsS3Service) {
+    public InscripcionController(InscripcionRepository inscripcionRepository, CursoRepository cursoRepository, AwsS3Service awsS3Service, cl.duoc.ejemplo.microservicio.service.ProducirMensajeService producirMensajeService) {
         this.inscripcionRepository = inscripcionRepository;
         this.cursoRepository = cursoRepository;
         this.awsS3Service = awsS3Service;
+        this.producirMensajeService = producirMensajeService;
     }
 
     @PostMapping
@@ -82,6 +84,10 @@ public class InscripcionController {
         }
         resumen.append("Total a Pagar: $").append(inscripcion.getTotalAPagar()).append("\n");
         resumen.append("==============================\n");
+
+        // Enviar el resumen a la cola MQ para ser consumido y guardado en Oracle Cloud
+        cl.duoc.ejemplo.microservicio.dto.ResumenCompraDTO dto = new cl.duoc.ejemplo.microservicio.dto.ResumenCompraDTO(id, resumen.toString());
+        producirMensajeService.enviarObjeto(dto);
 
         byte[] archivoBytes = resumen.toString().getBytes(StandardCharsets.UTF_8);
 

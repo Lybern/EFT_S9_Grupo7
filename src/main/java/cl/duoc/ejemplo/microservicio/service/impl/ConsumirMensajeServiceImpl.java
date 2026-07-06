@@ -4,20 +4,28 @@ import java.io.IOException;
 
 import org.springframework.amqp.core.Message;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Connection;
 import com.rabbitmq.client.ConnectionFactory;
 import com.rabbitmq.client.GetResponse;
 
 import cl.duoc.ejemplo.microservicio.config.RabbitMQConfig;
+import cl.duoc.ejemplo.microservicio.dto.ResumenCompraDTO;
+import cl.duoc.ejemplo.microservicio.entities.ResumenCompra;
+import cl.duoc.ejemplo.microservicio.repositories.ResumenCompraRepository;
 import cl.duoc.ejemplo.microservicio.service.ConsumirMensajeService;
 
 @Service
 public class ConsumirMensajeServiceImpl implements ConsumirMensajeService {
 
 	private String ultimoMensaje;
+
+	@Autowired
+	private ResumenCompraRepository resumenCompraRepository;
 
 	@Override
 	public String obtenerUltimoMensaje() {
@@ -68,18 +76,28 @@ public class ConsumirMensajeServiceImpl implements ConsumirMensajeService {
 		try {
 			String contenido = new String(mensaje.getBody(), "UTF-8");
 
-			this.ultimoMensaje = contenido;
+			// Deserializar el DTO enviado por el Productor
+			ObjectMapper mapper = new ObjectMapper();
+			ResumenCompraDTO dto = mapper.readValue(contenido, ResumenCompraDTO.class);
+			
+			this.ultimoMensaje = dto.getResumen();
 
-			System.out.println("Mensaje recibido: " + contenido);
+			System.out.println("Mensaje recibido para inscripcion: " + dto.getInscripcionId());
 
-			Thread.sleep(10000);
+			// Guardar en la nueva tabla de Oracle
+			ResumenCompra entidad = new ResumenCompra();
+			entidad.setInscripcionId(dto.getInscripcionId());
+			entidad.setResumen(dto.getResumen());
+			resumenCompraRepository.save(entidad);
+			System.out.println("Resumen guardado exitosamente en BD Oracle.");
 
 			canal.basicAck(mensaje.getMessageProperties().getDeliveryTag(), false);
 			System.out.println("Acknowledge OK enviado");
 
 		} catch (Exception e) {
 			canal.basicNack(mensaje.getMessageProperties().getDeliveryTag(), false, false);
-			System.out.println("Acknowledge NO OK enviado");
+			System.out.println("Acknowledge NO OK enviado por error: " + e.getMessage());
+			e.printStackTrace();
 		}
 	}
 }
