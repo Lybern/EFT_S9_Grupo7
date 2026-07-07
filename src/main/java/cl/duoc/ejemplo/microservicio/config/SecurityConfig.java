@@ -12,7 +12,14 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        http.authorizeHttpRequests(authorize -> authorize.anyRequest().authenticated()).oauth2ResourceServer(oauth2 -> oauth2.jwt(jwt -> {}));
+        http
+            .csrf(csrf -> csrf.disable())
+            .authorizeHttpRequests(authorize -> authorize
+                .requestMatchers("/", "/index.html", "/error", "/api/send").permitAll()
+                .anyRequest().authenticated()
+            )
+            .oauth2Login(login -> {}) // Habilita login desde el navegador
+            .oauth2ResourceServer(oauth2 -> oauth2.jwt(jwt -> {}));
         return http.build();
     }
 }
