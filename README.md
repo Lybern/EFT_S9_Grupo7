@@ -98,6 +98,17 @@ curl -X DELETE "http://localhost:8080/inscripciones/1/resumen?bucket=mi-bucket-s
 
 ---
 
+## Actualización (Semana 7): Integración con RabbitMQ y Seguridad
+
+En la última iteración del proyecto, se incorporó un sistema de colas MQ y se mejoraron las prácticas de seguridad y despliegue:
+
+*   **Integración RabbitMQ:** La generación del resumen de inscripción (`GET /{id}/resumen/generar`) ahora envía simultáneamente un mensaje a RabbitMQ. Un nuevo consumidor interno escucha la cola y guarda el resumen (como un comprobante de compra) en una **nueva tabla** (`RESUMEN_COMPRA`) creada automáticamente en Oracle Cloud.
+*   **Nuevo Productor API:** Se habilitó el endpoint de prueba `POST /api/send` para publicar mensajes JSON estructurados directamente hacia la cola.
+*   **Seguridad:** Se eliminaron las credenciales hardcodeadas. La conexión a la BD Oracle ahora es 100% inyectada por variables de entorno seguras.
+*   **CI/CD Reforzado:** El pipeline hacia AWS EC2 fue actualizado para usar credenciales IAM estables y limpiar contenedores huérfanos antes de redesplegar el servicio.
+
+---
+
 ## Notas
 - Este microservicio interactúa con una base de datos **Oracle** (requiere inyectar variables de entorno como `ORACLE_TNS_NAME`, `ORACLE_DB_USER`, `ORACLE_DB_PASSWORD` y un Oracle Wallet válido bajo `/app/wallet` o entorno local).
 - Utiliza **Spring Cloud AWS** para conectarse de manera fluida al servicio AWS S3.
