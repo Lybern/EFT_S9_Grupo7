@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>API Gateway Terminal</title>
+    <meta name="description" content="Technical interface for API requests">
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --bg-color: #050505;
+            --panel-bg: #0d1117;
+            --border-color: #30363d;
+            --accent-primary: #58a6ff;
+            --success: #3fb950;
+            --danger: #f85149;
+            --text-main: #c9d1d9;
+            --text-muted: #8b949e;
+            --font-mono: 'Fira Code', monospace;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: var(--font-mono);
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        /* Technical Panel */
+        .panel {
+            background: var(--panel-bg);
+            border: 1px solid var(--border-color);
+            width: 100%;
+            max-width: 800px;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.8);
+        }
+
+        /* Top Bar */
+        .panel-header {
+            background: #161b22;
+            border-bottom: 1px solid var(--border-color);
+            padding: 10px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+
+        .window-controls {
+            display: flex;
+            gap: 8px;
+        }
+
+        .control-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+        }
+        .dot-red { background: #ff5f56; }
+        .dot-yellow { background: #ffbd2e; }
+        .dot-green { background: #27c93f; }
+
+        .panel-body {
+            padding: 30px;
+            display: flex;
+            flex-direction: column;
+            gap: 25px;
+        }
+
+        .header h1 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--text-main);
+            margin-bottom: 5px;
+        }
+
+        .header p {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+
+        /* Status Line */
+        .status-line {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 0.9rem;
+            background: #0d1117;
+            border: 1px solid var(--border-color);
+            padding: 10px 15px;
+            color: var(--text-muted);
+        }
+
+        .status-indicator {
+            width: 8px;
+            height: 8px;
+            background-color: var(--text-muted);
+            border-radius: 50%;
+        }
+        .status-indicator.active {
+            background-color: var(--success);
+            box-shadow: 0 0 8px var(--success);
+        }
+
+        /* Button styles */
+        .controls {
+            display: flex;
+            gap: 15px;
+        }
+
+        button {
+            font-family: var(--font-mono);
+            background: #21262d;
+            color: #c9d1d9;
+            border: 1px solid rgba(240, 246, 252, 0.1);
+            padding: 10px 20px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        button:hover {
+            background: #30363d;
+            border-color: var(--text-muted);
+        }
+
+        button.primary {
+            background: #238636;
+            color: #ffffff;
+            border-color: rgba(240, 246, 252, 0.1);
+            font-weight: 500;
+        }
+
+        button.primary:hover {
+            background: #2ea043;
+        }
+
+        /* Output Box */
+        .terminal-output {
+            background: #010409;
+            border: 1px solid var(--border-color);
+            padding: 15px;
+            font-size: 0.85rem;
+            line-height: 1.5;
+            color: var(--text-main);
+            min-height: 200px;
+            max-height: 400px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+
+        .terminal-output.hidden {
+            display: none;
+        }
+
+        /* JSON Highlighting */
+        .string { color: #a5d6ff; }
+        .number { color: #79c0ff; }
+        .boolean { color: #ff7b72; }
+        .null { color: var(--text-muted); }
+        .key { color: #7ee787; }
+
+        .log-success { color: var(--success); }
+        .log-error { color: var(--danger); }
+        .log-info { color: var(--accent-primary); }
+        .log-timestamp { color: var(--text-muted); margin-right: 10px; }
+
+        /* Loader */
+        .spinner {
+            display: inline-block;
+            width: 14px;
+            height: 14px;
+            border: 2px solid rgba(255,255,255,0.3);
+            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="panel">
+        <div class="panel-header">
+            <div class="window-controls">
+                <div class="control-dot dot-red"></div>
+                <div class="control-dot dot-yellow"></div>
+                <div class="control-dot dot-green"></div>
+            </div>
+            <span>user@api-client: ~/dashboard</span>
+        </div>
+        
+        <div class="panel-body">
+            <div class="header">
+                <h1>$ ./api_gateway_client</h1>
+                <p>Establishing secure connection to backend services...</p>
+            </div>
+
+            <div class="status-line">
+                <div class="status-indicator" id="authIndicator"></div>
+                <span id="userName">Checking identity provider...</span>
+            </div>
+
+            <div class="controls">
+                <button class="primary" onclick="executeRequest()" id="reqBtn">
+                    <span id="btnIcon">></span>
+                    <span id="btnText">Execute GET Request</span>
+                </button>
+                <button onclick="window.location.href='/logout'">
+                    Terminate Session
+                </button>
+            </div>
+
+            <div id="output" class="terminal-output hidden"></div>
+        </div>
+    </div>
+
+    <script>
+        const outputBox = document.getElementById('output');
+        let currentToken = "";
+
+        // Initialization
+        window.onload = async () => {
+            try {
+                const response = await fetch('/api/token');
+                if (response.ok) {
+                    const data = await response.json();
+                    currentToken = data.token;
+                    document.getElementById('userName').innerHTML = `Identity verified via <b>Azure B2C</b>`;
+                    document.getElementById('authIndicator').classList.add('active');
+                } else {
+                    document.getElementById('userName').textContent = "Authentication required (401)";
+                }
+            } catch (e) {
+                console.error(e);
+            }
+        };
+
+        // JSON formatter
+        function formatJSON(json) {
+            json = json.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+            return json.replace(/("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g, function (match) {
+                var cls = 'number';
+                if (/^"/.test(match)) {
+                    if (/:$/.test(match)) {
+                        cls = 'key';
+                        match = match.replace(/"/g, ''); 
+                    } else {
+                        cls = 'string';
+                    }
+                } else if (/true|false/.test(match)) {
+                    cls = 'boolean';
+                } else if (/null/.test(match)) {
+                    cls = 'null';
+                }
+                return '<span class="' + cls + '">' + match + '</span>';
+            });
+        }
+
+        function getTimestamp() {
+            const now = new Date();
+            return now.toISOString().split('T')[1].slice(0, -1);
+        }
+
+        function appendLog(level, message, isJson = false) {
+            outputBox.classList.remove('hidden');
+            const time = `<span class="log-timestamp">[${getTimestamp()}]</span>`;
+            let levelClass = 'log-info';
+            if (level === 'ERROR') levelClass = 'log-error';
+            if (level === 'SUCCESS') levelClass = 'log-success';
+
+            const prefix = `<span class="${levelClass}">${level}</span>`;
+            const formattedMsg = isJson ? formatJSON(message) : message;
+            
+            outputBox.innerHTML += `<div>${time} ${prefix} ${formattedMsg}</div>`;
+            outputBox.scrollTop = outputBox.scrollHeight;
+        }
+
+        async function executeRequest() {
+            const btnIcon = document.getElementById('btnIcon');
+            const btnText = document.getElementById('btnText');
+            
+            try {
+                btnIcon.innerHTML = '<div class="spinner"></div>';
+                btnText.textContent = "Executing...";
+                outputBox.classList.remove('hidden');
+                
+                outputBox.innerHTML = ''; // Clear previous
+                appendLog('INFO', `Initializing request to AWS API Gateway...`);
+
+                if (!currentToken) {
+                    throw new Error("Missing Bearer Token. Session invalid.");
+                }
+
+                const url = 'https://eof4imuyc9.execute-api.us-east-1.amazonaws.com/Desarrollo/datos/1';
+                appendLog('INFO', `GET ${url}`);
+
+                const response = await fetch(url, {
+                    method: 'GET',
+                    headers: { 
+                        'Authorization': `Bearer ${currentToken}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status} ${response.statusText}`);
+                }
+
+                const rawText = await response.text();
+                appendLog('SUCCESS', `HTTP 200 OK`);
+                
+                try {
+                    const data = JSON.parse(rawText);
+                    appendLog('INFO', `Response Body:\n` + JSON.stringify(data, null, 2), true);
+                } catch (e) {
+                    appendLog('INFO', `Response Body:\n"${rawText}"`);
+                }
+
+            } catch (error) {
+                appendLog('ERROR', error.message);
+            } finally {
+                btnIcon.textContent = ">";
+                btnText.textContent = "Execute GET Request";
+            }
+        }
+    </script>
+</body>
+</html>
