@@ -101,5 +101,10 @@ jobs:
               -e AWS_SESSION_TOKEN="${{ secrets.AWS_SESSION_TOKEN }}" \
               -e AWS_REGION="us-east-1" \
               ${{ secrets.DOCKERHUB_USERNAME }}/my-app:latest
+            
+            # Imprimir los logs del contenedor para que los podamos ver
+            sleep 15
+            docker logs my-app
           EOF
+
 
