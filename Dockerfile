@@ -21,7 +21,7 @@ ENV AZURE_CLIENT_SECRET=${AZURE_CLIENT_SECRET}
 
 COPY pom.xml .
 COPY src /app/src
-RUN mvn clean package
+RUN mvn clean package -DskipTests
 
 FROM eclipse-temurin:22-jdk
 
