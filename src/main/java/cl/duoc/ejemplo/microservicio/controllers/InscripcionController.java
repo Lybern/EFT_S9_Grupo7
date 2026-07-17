@@ -99,7 +99,7 @@ public class InscripcionController {
     }
 
     // 2. Subir resumen generado a bucket S3 en una carpeta con el id de la inscripción
-    @PostMapping("/{id}/resumen")
+    @PostMapping("/{id}/resumen/subir")
     public ResponseEntity<Void> subirResumenS3(
             @PathVariable Long id, 
             @RequestParam("bucket") String bucket, 
@@ -114,7 +114,7 @@ public class InscripcionController {
     }
 
     // 3. Modificar archivo del resumen en S3 (sobrescribir)
-    @PutMapping("/{id}/resumen")
+    @PutMapping("/{id}/resumen/actualizar")
     public ResponseEntity<Void> modificarResumenS3(
             @PathVariable Long id, 
             @RequestParam("bucket") String bucket, 
@@ -130,7 +130,7 @@ public class InscripcionController {
     }
 
     // 4. Descargar archivo de resumen desde S3
-    @GetMapping("/{id}/resumen")
+    @GetMapping("/{id}/resumen/descargar")
     public ResponseEntity<byte[]> descargarResumenS3(
             @PathVariable Long id, 
             @RequestParam("bucket") String bucket, 
@@ -157,7 +157,7 @@ public class InscripcionController {
     }
 
     // 5. Borrar archivo del resumen en S3
-    @DeleteMapping("/{id}/resumen")
+    @DeleteMapping("/{id}/resumen/eliminar")
     public ResponseEntity<?> borrarResumenS3(
             @PathVariable Long id, 
             @RequestParam("bucket") String bucket, 
