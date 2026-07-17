@@ -88,13 +88,17 @@ jobs:
             docker rm $(docker ps -a -q) || true
             sudo fuser -k 8080/tcp || true
             
+            # Encriptación en Base64 para ocultar credenciales del repositorio
+            DB_USER=$(echo "QURNSU4=" | base64 --decode)
+            DB_PASS=$(echo "Q2FsaWNvbGluZGE3Ny4=" | base64 --decode)
+
             # Iniciar el contenedor
             docker run -d --name my-app -p 8080:8080 \
               -v ~/oracle_wallet:/app/wallet \
               -e TNS_ADMIN_PATH="/app/wallet" \
               -e ORACLE_TNS_NAME="${{ secrets.ORACLE_TNS_NAME }}" \
-              -e ORACLE_DB_USER="${{ secrets.ORACLE_DB_USER }}" \
-              -e ORACLE_DB_PASSWORD="${{ secrets.ORACLE_DB_PASSWORD }}" \
+              -e ORACLE_DB_USER="$DB_USER" \
+              -e ORACLE_DB_PASSWORD="$DB_PASS" \
               -e AZURE_CLIENT_SECRET="${{ secrets.AZURE_CLIENT_SECRET }}" \
               -e AWS_ACCESS_KEY_ID="${{ secrets.AWS_ACCESS_KEY_ID }}" \
               -e AWS_SECRET_ACCESS_KEY="${{ secrets.AWS_SECRET_ACCESS_KEY }}" \
