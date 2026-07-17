@@ -91,6 +91,7 @@ jobs:
             # Iniciar el contenedor
             docker run -d --name my-app -p 8080:8080 \
               -v ~/oracle_wallet:/app/wallet \
+              -e TNS_ADMIN_PATH="/app/wallet" \
               -e ORACLE_TNS_NAME="${{ secrets.ORACLE_TNS_NAME }}" \
               -e ORACLE_DB_USER="${{ secrets.ORACLE_DB_USER }}" \
               -e ORACLE_DB_PASSWORD="${{ secrets.ORACLE_DB_PASSWORD }}" \
@@ -101,3 +102,4 @@ jobs:
               -e AWS_REGION="us-east-1" \
               ${{ secrets.DOCKERHUB_USERNAME }}/my-app:latest
           EOF
+
