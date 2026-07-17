@@ -91,6 +91,7 @@ jobs:
             # Iniciar el contenedor
             docker run -d --name my-app -p 8080:8080 \
               -v ~/oracle_wallet:/app/wallet \
+              -e TNS_ADMIN_PATH="/app/wallet" \
               -e ORACLE_TNS_NAME="${{ secrets.ORACLE_TNS_NAME }}" \
               -e ORACLE_DB_USER="${{ secrets.ORACLE_DB_USER }}" \
               -e ORACLE_DB_PASSWORD="${{ secrets.ORACLE_DB_PASSWORD }}" \
@@ -100,4 +101,8 @@ jobs:
               -e AWS_SESSION_TOKEN="${{ secrets.AWS_SESSION_TOKEN }}" \
               -e AWS_REGION="us-east-1" \
               ${{ secrets.DOCKERHUB_USERNAME }}/my-app:latest
+              
+            # Esperar 10 segundos para ver si la app se estrella y mostrar los errores
+            sleep 10
+            docker logs my-app
           EOF
