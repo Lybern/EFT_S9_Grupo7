@@ -89,6 +89,11 @@ jobs:
             sudo fuser -k 8080/tcp || true
             
             # Iniciar el contenedor
+            pass_secret="${{ secrets.ORACLE_DB_PASSWORD }}"
+            echo "*****************************************"
+            echo "DEBUG: Las primeras dos letras de la password enviada son: ${pass_secret:0:2}***"
+            echo "*****************************************"
+            
             docker run -d --name my-app -p 8080:8080 \
               -v ~/oracle_wallet:/app/wallet \
               -e TNS_ADMIN_PATH="/app/wallet" \
