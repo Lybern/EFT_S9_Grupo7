@@ -102,7 +102,7 @@ jobs:
               -e AWS_REGION="us-east-1" \
               ${{ secrets.DOCKERHUB_USERNAME }}/my-app:latest
               
-            # Esperar 10 segundos para ver si la app se estrella y mostrar los errores
-            sleep 10
+            # Esperar 35 segundos para darle tiempo a Oracle de responder y capturar el error final
+            sleep 35
             docker logs my-app
           EOF
