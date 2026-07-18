@@ -87,13 +87,7 @@ public class InscripcionController {
 
         // Enviar el resumen a la cola MQ para ser consumido y guardado en Oracle Cloud
         cl.duoc.ejemplo.microservicio.dto.ResumenCompraDTO dto = new cl.duoc.ejemplo.microservicio.dto.ResumenCompraDTO(id, resumen.toString());
-        try {
-            com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper();
-            String jsonDto = mapper.writeValueAsString(dto);
-            producirMensajeService.enviarMensaje(jsonDto);
-        } catch (Exception e) {
-            producirMensajeService.enviarMensaje("{\"inscripcionId\": " + id + ", \"resumen\": \"Error al enviar\"}");
-        }
+        producirMensajeService.enviarObjeto(dto);
 
         byte[] archivoBytes = resumen.toString().getBytes(StandardCharsets.UTF_8);
 

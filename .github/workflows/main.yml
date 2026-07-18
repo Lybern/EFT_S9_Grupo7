@@ -82,10 +82,8 @@ jobs:
             sed -i 's|"?/network/admin"|"/app/wallet"|g' ~/oracle_wallet/sqlnet.ora
             rm ~/oracle_wallet/wallet.zip
             
-            # Parar y eliminar cualquier contenedor previo o proceso en el puerto 8080
+            # Parar y eliminar solo el contenedor de Java (my-app) y liberar el puerto
             docker stop my-app || true && docker rm my-app || true
-            docker stop $(docker ps -a -q) || true
-            docker rm $(docker ps -a -q) || true
             sudo fuser -k 8080/tcp || true
             
             # Encriptación en Base64 para ocultar credenciales del repositorio
