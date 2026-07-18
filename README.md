@@ -1,115 +1,83 @@
-# EjemploMicroservicio1
+# Plataforma Cloud Native de Gestión de Cursos
+**Evaluación Final Transversal (EFT) - Semana 9**
 
-Este es el microservicio de gestión de inscripciones (Cloud Native). Conecta a una base de datos Oracle y se integra con AWS S3 para generar y almacenar resúmenes de inscripción.
+**Integrantes:** Carolina Delgado, Leonardo Bustamante  
+**Asignatura:** Cloud Native II (CDY2204)  
+**Docente:** Ignacio Pastenet  
 
 ---
 
-## Endpoints Disponibles (Inscripciones y Resúmenes S3)
+## 🚀 Resumen del Proyecto
 
-### POST `/inscripciones`
-Crea una nueva inscripción para un estudiante calculando el costo total según los cursos seleccionados.
+Este repositorio contiene el código fuente y las configuraciones de infraestructura de una plataforma de gestión de cursos en línea, construida estrictamente bajo los paradigmas de **Cloud Native**. 
 
-**Cuerpo de ejemplo (JSON):**
-```json
-{
-  "nombreEstudiante": "Juan Perez",
-  "cursoIds": [1, 2]
-}
-```
+La arquitectura implementa un microservicio (BFF) en **Java con Spring Boot**, orquestando almacenamiento físico en la nube, comunicación asíncrona mediante colas de mensajería, persistencia transaccional y un perímetro de seguridad robusto con identidad federada.
 
-**Ejemplo con `curl`:**
+---
+
+## 🏗️ Arquitectura Cloud Native
+
+El ecosistema de la aplicación se compone de los siguientes servicios integrados:
+
+1.  **Identity as a Service (IdaaS):** Azure AD B2C (Microsoft Entra ID) provee la autenticación federada, gestión de usuarios y emisión de Access/ID Tokens (JWT).
+2.  **API Manager:** AWS API Gateway actúa como el único punto de entrada, interceptando el tráfico, validando criptográficamente los JWT contra Azure B2C y enrutando de forma segura hacia el backend.
+3.  **Microservicio BFF:** Desarrollado en Java (Spring Boot) y empaquetado en contenedores Docker, desplegado en una instancia de Amazon EC2.
+4.  **Almacenamiento (Storage):** AWS S3 se utiliza para persistir los archivos físicos (resúmenes de inscripción) estructurados por carpetas.
+5.  **Servicio de Colas (Mensajería Asíncrona):** RabbitMQ, desplegado mediante Docker Compose en EC2, desacopla la generación de comprobantes para garantizar tolerancia a fallos.
+6.  **Persistencia Transaccional:** Oracle Cloud Autonomous Database guarda las inscripciones y el historial de mensajes consumidos exitosamente por la cola (Acknowledge Manual).
+7.  **Integración y Despliegue Continuo (CI/CD):** Pipeline de GitHub Actions que automatiza la construcción de la imagen de Docker y el redespliegue (Zero-downtime aproximado) en AWS EC2.
+
+---
+
+## 🔒 Rutas Securitizadas (Endpoints del API Gateway)
+
+Las siguientes rutas están protegidas por el **Autorizador JWT** de AWS. Para invocarlas (vía Postman o Frontend), es obligatorio adjuntar el `Bearer Token` obtenido desde Azure AD B2C en la cabecera `Authorization`.
+
+**URL de Invocación Base:**  
+`https://f5zy111qg7.execute-api.us-east-1.amazonaws.com/PlataformaCursos`
+
+### 1. Gestión Transaccional (Síncrona)
+*   `POST /inscripciones` - Inscribir un estudiante y calcular monto total.
+*   `GET /cursos` - Obtener el catálogo de cursos.
+*   `POST /cursos` - Crear un nuevo curso en el catálogo.
+
+### 2. Procesos Asíncronos (RabbitMQ)
+*   `GET /inscripciones/{id}/resumen/generar` - Genera el resumen y dispara el mensaje al Productor de RabbitMQ de forma asíncrona.
+*   `GET /api/mensaje/ultimo` - Consumidor: Lee el último comprobante procesado y guardado en la base de datos Oracle.
+
+### 3. Almacenamiento Físico (AWS S3)
+*   `POST /inscripciones/{id}/resumen/subir` - Carga un archivo físico al Bucket de S3.
+*   `GET /inscripciones/{id}/resumen/descargar` - Descarga el documento desde S3.
+*   `DELETE /inscripciones/{id}/resumen/eliminar` - Borra el documento en S3.
+
+---
+
+## ⚙️ Configuración y Despliegue Local
+
+### Requisitos
+*   Java 17+
+*   Docker y Docker Compose
+*   Billetera (Wallet) de Oracle Cloud descomprimida.
+
+### Levantar el Servicio de Colas (RabbitMQ)
 ```bash
-curl -X POST 'http://localhost:8080/inscripciones' \
-  -H 'Content-Type: application/json' \
-  -d '{"nombreEstudiante": "Juan Perez", "cursoIds": [1, 2]}'
+docker-compose up -d
 ```
+*RabbitMQ estará disponible en el puerto `5672` (AMQP) y su consola de administración en `http://localhost:15672` (guest/guest).*
+
+### Variables de Entorno Requeridas
+Para ejecutar el microservicio de Java, se deben inyectar las siguientes variables:
+*   `ORACLE_TNS_NAME`, `ORACLE_DB_USER`, `ORACLE_DB_PASSWORD`
+*   `TNS_ADMIN_PATH` (Ruta absoluta hacia el Oracle Wallet)
+*   `AZURE_CLIENT_SECRET` (Secreto del App Registration en Azure B2C)
+*   `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `AWS_SESSION_TOKEN` (Credenciales para S3).
 
 ---
 
-### GET `/inscripciones`
-Lista todas las inscripciones registradas en la base de datos.
+## 🔄 Flujo CI/CD (GitHub Actions)
 
-**Ejemplo con `curl`:**
-```bash
-curl -X GET 'http://localhost:8080/inscripciones'
-```
+Cualquier `push` o `pull request` hacia la rama `main` dispara automáticamente el workflow definido en `.github/workflows/main.yml`. 
 
----
-
-### GET `/inscripciones/{id}`
-Obtiene el detalle de una inscripción específica según su ID.
-
-**Ejemplo con `curl`:**
-```bash
-curl -X GET 'http://localhost:8080/inscripciones/1'
-```
-
----
-
-### GET `/inscripciones/{id}/resumen/generar`
-Genera dinámicamente un archivo físico de texto (resumen) con los detalles de la inscripción, listo para descargar.
-
-**Ejemplo con `curl`:**
-```bash
-curl -O -J -X GET 'http://localhost:8080/inscripciones/1/resumen/generar'
-```
-
----
-
-### POST `/inscripciones/{id}/resumen?bucket={bucketName}`
-Sube un archivo de resumen generado a una carpeta lógica (identificada por el ID de la inscripción) dentro de un bucket de AWS S3.
-
-**Ejemplo con `curl`:**
-```bash
-curl -X POST "http://localhost:8080/inscripciones/1/resumen?bucket=mi-bucket-s3" \
-  -F "file=@resumen_inscripcion_1.txt"
-```
-
----
-
-### PUT `/inscripciones/{id}/resumen?bucket={bucketName}`
-Modifica (sobrescribe) un archivo de resumen existente en el bucket S3 para la inscripción dada.
-
-**Ejemplo con `curl`:**
-```bash
-curl -X PUT "http://localhost:8080/inscripciones/1/resumen?bucket=mi-bucket-s3" \
-  -F "file=@resumen_nuevo.txt"
-```
-
----
-
-### GET `/inscripciones/{id}/resumen?bucket={bucketName}&filename={fileName}`
-Descarga el archivo de resumen previamente guardado en el bucket de S3.
-
-**Ejemplo con `curl`:**
-```bash
-curl -O -J -X GET "http://localhost:8080/inscripciones/1/resumen?bucket=mi-bucket-s3&filename=resumen_inscripcion_1.txt"
-```
-
----
-
-### DELETE `/inscripciones/{id}/resumen?bucket={bucketName}&filename={fileName}`
-Borra definitivamente el archivo de resumen alojado en AWS S3.
-
-**Ejemplo con `curl`:**
-```bash
-curl -X DELETE "http://localhost:8080/inscripciones/1/resumen?bucket=mi-bucket-s3&filename=resumen_inscripcion_1.txt"
-```
-
----
-
-## Actualización (Semana 7): Integración con RabbitMQ y Seguridad
-
-En la última iteración del proyecto, se incorporó un sistema de colas MQ y se mejoraron las prácticas de seguridad y despliegue:
-
-*   **Integración RabbitMQ:** La generación del resumen de inscripción (`GET /{id}/resumen/generar`) ahora envía simultáneamente un mensaje a RabbitMQ. Un nuevo consumidor interno escucha la cola y guarda el resumen (como un comprobante de compra) en una **nueva tabla** (`RESUMEN_COMPRA`) creada automáticamente en Oracle Cloud.
-*   **Nuevo Productor API:** Se habilitó el endpoint de prueba `POST /api/send` para publicar mensajes JSON estructurados directamente hacia la cola.
-*   **Seguridad:** Se eliminaron las credenciales hardcodeadas. La conexión a la BD Oracle ahora es 100% inyectada por variables de entorno seguras.
-*   **CI/CD Reforzado:** El pipeline hacia AWS EC2 fue actualizado para usar credenciales IAM estables y limpiar contenedores huérfanos antes de redesplegar el servicio.
-
----
-
-## Notas
-- Este microservicio interactúa con una base de datos **Oracle** (requiere inyectar variables de entorno como `ORACLE_TNS_NAME`, `ORACLE_DB_USER`, `ORACLE_DB_PASSWORD` y un Oracle Wallet válido bajo `/app/wallet` o entorno local).
-- Utiliza **Spring Cloud AWS** para conectarse de manera fluida al servicio AWS S3.
-- En los endpoints vinculados a S3, el uso del parámetro `bucket` en la URL otorga flexibilidad para elegir el bucket objetivo dinámicamente.
+1.  **Build:** Compila el proyecto con Maven y construye la imagen Docker.
+2.  **Push:** Sube la versión más reciente al repositorio de Docker Hub.
+3.  **Deploy:** Se conecta por SSH a la instancia EC2, apaga el contenedor de Java antiguo (dejando RabbitMQ intacto gracias al Docker Compose), descarga la nueva imagen y la levanta exponiendo el puerto `8080`.
