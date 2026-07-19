@@ -21,6 +21,7 @@ public class Inscripcion {
     )
     private List<Curso> cursos;
 
+    @Column(name = "totalapagar")
     private BigDecimal totalAPagar;
 
     public Long getId() {
