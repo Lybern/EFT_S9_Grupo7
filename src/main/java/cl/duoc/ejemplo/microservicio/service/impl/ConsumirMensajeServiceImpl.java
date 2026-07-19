@@ -5,7 +5,6 @@ import java.io.IOException;
 import org.springframework.amqp.core.Message;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -25,9 +24,6 @@ public class ConsumirMensajeServiceImpl implements ConsumirMensajeService {
 
 	private String ultimoMensaje;
 
-	@Value("${spring.rabbitmq.host}")
-	private String rabbitmqHost;
-
 	@Autowired
 	private ResumenCompraRepository resumenCompraRepository;
 
@@ -42,7 +38,7 @@ public class ConsumirMensajeServiceImpl implements ConsumirMensajeService {
 
 		ConnectionFactory factory = new ConnectionFactory();
 
-		factory.setHost(rabbitmqHost);
+		factory.setHost("3.235.71.51");
 		factory.setUsername("guest");
 		factory.setPassword("guest");
 
