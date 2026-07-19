@@ -75,9 +75,38 @@ INSERT INTO CURSO (nombre, instructor, duracion, costo) VALUES ('Bases de Datos 
 COMMIT;
 
 -- ====================================================================
--- CONSULTAS DE VERIFICACIÓN (OPCIONALES)
+-- 6. SIMULAR MENSAJES DE RABBITMQ GUARDADOS
 -- ====================================================================
--- SELECT * FROM CURSO;
--- SELECT * FROM INSCRIPCION;
--- SELECT * FROM INSCRIPCION_CURSO;
--- SELECT * FROM RESUMEN_COMPRA;
+INSERT INTO resumen_compra (inscripcion_id, resumen) VALUES (1, '=== RESUMEN === ID: 1, Estudiante: Leonardo Bustamante, Cursos: AWS Cloud, Spring Boot. Total: $250000');
+INSERT INTO resumen_compra (inscripcion_id, resumen) VALUES (2, '=== RESUMEN === ID: 2, Estudiante: Ana Torres, Cursos: EFT Cloud Native II. Total: $50000');
+
+-- 7. GUARDAR CAMBIOS
+COMMIT;
+
+-- ====================================================================
+-- 8. CONSULTAS DE VERIFICACIÓN Y LIMPIEZA
+-- ====================================================================
+
+-- Verificar todos los cursos disponibles en el sistema
+SELECT * FROM curso;
+
+-- Contar cuántos mensajes de resumen de compra (RabbitMQ) se han procesado en total
+SELECT COUNT(*) AS total_mensajes_procesados
+FROM resumen_compra;
+
+-- Ver el detalle de los mensajes procesados y guardados
+SELECT * FROM resumen_compra;
+
+-- Ver el detalle de las inscripciones registradas
+SELECT * FROM inscripcion;
+
+-- ====================================================================
+-- 9. LIMPIEZA DE DATOS (Solo usar para reiniciar las pruebas)
+-- ====================================================================
+-- Eliminar los registros de prueba generados
+DELETE FROM resumen_compra WHERE inscripcion_id IN (1, 2);
+DELETE FROM inscripcion_curso WHERE inscripcion_id IN (1, 2);
+DELETE FROM inscripcion WHERE id IN (1, 2);
+
+-- Guardar los cambios de la limpieza
+COMMIT;
