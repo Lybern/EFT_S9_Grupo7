@@ -63,7 +63,7 @@ Las siguientes rutas están protegidas por el **Autorizador JWT** de AWS. Para i
 ```bash
 docker-compose up -d
 ```
-*RabbitMQ estará disponible en el puerto `5672` (AMQP) y su consola de administración en `http://localhost:15672` (guest/guest).*
+*RabbitMQ estará disponible en el puerto `5672` (AMQP) y su consola de administración en `http://localhost:15672`*
 
 ### Variables de Entorno Requeridas
 Para ejecutar el microservicio de Java, se deben inyectar las siguientes variables:
